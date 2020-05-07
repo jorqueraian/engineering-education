@@ -4,27 +4,41 @@
 The spacecraft [Juno](https://en.wikipedia.org/wiki/Juno_(spacecraft)) was launched in 2011 and since then it has taken countless [photos](https://www.nasa.gov/mission_pages/juno/images/index.html) of Jupiter, many of which are nearly flawless in their detail. But how can these images be transmitted hundreds of millions of miles through space with relatively few signs of interference? Similarly, you might ask how DVDs can still play movies with scratches on them. This is done with the use of error-correcting codes. Like encryption, error-correcting codes are one of the most fundamental parts that keep our technology-driven society running. Every communication channels experience transmission errors in some form, meaning it is a requirement to be able to fix these errors. In this article, we will explore the intuitions behind error-correcting codes as well as introduce the Hamming code.
 
 ## What are Error-Correcting Codes?
-At its core, error-correcting codes allow for the detection and correction of errors in any form of data, either transmission or storage. This is achieved by taking a string of symbols, most commonly a string of bits, this will be the input. With the input, we will add additional bits called parity bits. These can help determine whether or not an error might have occurred. The most classic example of error-correction is the repetition code, where for each bit in an input message, we duplicate the bit multiple times. For example, if you had the message $01101$ we could encode it using this repetition method and it would become $000111111000111$. In this case, we repeated each bit three times. If a random bit flip or error occurred, we could correct it by simply taking the most common bit of each three-bit segments. Let's say we received the following message $100111101000110$, which includes multiple errors. We would then be able to correct the error and decode the message to the original message $01101$. But this method isn't very efficient as we had to make our message three times longer, adding two parity bits for each bit of the original code.
+At its core, error-correcting codes allow for the detection and correction of errors in any form of data, either transmission or storage. This is achieved by taking a string of symbols, most commonly a string of bits as input. We will add additional bits called parity bits. These can help determine whether or not an error might have occurred. The most classic example of error-correction is the repetition code, where for each bit in an input message, we duplicate the bit multiple times. For example, if you had the message `01101` we could encode it using this repetition method and it would become `000 111 111 000 111`. In this case, we repeated each bit three times. If a random bit flip or error occurred, we could correct it by simply taking the most common bit of each three-bit segments. Let's say we received the following message `100 111 101 000 110`, which includes multiple errors. We would then be able to correct the error and decode the message to the original message `01101`. But this method isn't very efficient as we had to make our message three times longer, adding two parity bits for each bit of the original code.
 
-How can we improve this? One idea would be to make our parity bits dependent on multiple bits instead of just one. For example, consider the two-bit message $11$. We could add a single parity bit by taking the XOR of the two original bits, adding only one additional bit, $1 \oplus 1 = 0$. Now we have the encoded message $110$. This then allows us to check if one error occurred as if there was an error this parity bit will no longer be correct. Consider the received message $100$, with an error. If we try to re-calculate the parity bit we would find it no longer matches the received parity bit. So we know there must be an error. This still doesn't allow us to correct the error. To do this we will need to add more parity bits.
+How can we improve this? One idea would be to make our parity bits dependent on multiple bits instead of just one. For example, consider the two-bit message `11`. We could add a single parity bit by taking the XOR of the two original bits, adding only one additional bit, $1 \oplus 1 = 0$. Now we have the encoded message `110`. This then allows us to check if one error occurred as if there was an error this parity bit will no longer be correct. Consider the received message `100`, with an error. If we try to re-calculate the parity bit we would find it no longer matches the received parity bit. So we know there must be an error. This still doesn't allow us to correct the error. To do this we will need to add more parity bits.
 
-The problem with the previous example is that a valid code-word, like $110$, can be turned into a different valid codeword by changing any two bits. Changing both of the original bits still satisfies the parity and changing either of original bits and the parity will also satisfy the parity. So if only one error occurred, we would have no way to determine which of the valid codes was sent. As there would be three equally likely valid code words. This idea of a distance between valid code-words is called the Hamming distance, and for a single error to be correctable the Hamming distance must be at least three. With a Hamming distance of three, any received message that isn't already a valid code will be a distance of one away from a valid code. It will also be a distance of two or more from all other valid codes. This gives us a good idea of what the original message was and we can correct one error. The repetition code is an example of a code with distance three.  This isn't flawless, and as highlighted previously too many errors can cause our message to be incorrectly decoded. For example with the repetition code if two bits in the same three-bit segment were flipped we would then correct it to the wrong message.
+<!-- The first half didn't seen to lead in well to the Hamming distance idea. -->
+The problem with the previous example is that a valid code-word, like `110`, can be turned into a different valid codeword by changing any two bits. Changing both of the original bits still satisfies the parity and changing either of original bits and the parity will also satisfy the parity. <!-- this line comes out of nowhere. --> So if only one error occurred, we would have no way to determine which of the valid codes was sent. As there would be three equally likely valid code words. 
+<!-- Maybe try something like this -->
+The problem with the previous example is that with just a paritly bit `100` cant be turned back into the original message. There are three equally likely valid code words the this could have been before the error. 
+<!-- gggg -->
+The number of errored/invalid code-words between valid code-words is called the Hamming distance. In the previus example it was one and the repetition code is an example of a code with a distance of three. For a single error to be correctable the Hamming distance must be at least three. With a Hamming distance of three, any received message that isn't already a valid code will be a distance of one away from a valid code. It will also be a distance of two or more from all other valid codes. This gives us a good idea of what the original message was and we can correct one error. 
 
 ## The Binary Hamming code
+Using the idea of parity bits, we can create what is called the Hamming$[7,4]$-code. This code will take in any four-bit input message and encode it into a seven-bit message, by adding three additional parity bits. For simplicity let's call these three parity bits $x_1$, $x_2$ and $x_3$ and the original four bits of the message will be $m_1$, $m_2$, $m_3$, and $m_4$. 
 
-Using the idea of parity bits, we can create what is called the Hamming$[7,4]$-code. This code will take in any four-bit input message and encode it into a seven-bit message, by adding three additional parity bits. For simplicity let's call these three parity bits $x_1$, $x_2$ and $x_3$ and the original four bits of the message will be $m_1$, $m_2$, $m_3$, and $m_4$. Our goal is for these bits to help us decode, and to do that we can let each of them contain data of three of the four original bits. For example with the XOR operator $x_1=m_1 \oplus m_2  \oplus m_4$. If we determine that this parity bit is incorrect we know the error must have occurred with one of the four bits in the equation: $x_1$, $m_1$, $m_2$, or $m_4$. We can create the other two parity bits similarly.
+Our goal is for these parity bits to help us decode, and to do that we can let each of them contain data of three of the four original bits. For example with the XOR operator $x_1=m_1 \oplus m_2  \oplus m_4$. If we determine that this parity bit is incorrect we know the error must have occurred with one of the four bits in the equation $x_1$, $m_1$, $m_2$, or $m_4$. We can create the other two parity bits similarly.
 $$x_1=m_1 \oplus m_2  \oplus m_4\\
 x_2=m_1 \oplus m_3  \oplus m_4\\
 x_3=m_2 \oplus m_3  \oplus m_4$$
-With the parity bits, we can determine where the error occurred. It is important to note that we must assume at most one error occurred. Any more than one error will be impossible to correct and will appear as if a different bit was erroneous. Now that we have our parity bit let's break down how we can use them to correct errors. There are eight combinations of possibilities for any received message. These will include all three bits being correct, one of them being wrong, two of them being wrong or three of them being wrong. For a message with no error, all three bits will be correct. If $m_1$ had an error we would see that both $x_1$ and $x_2$ would be incorrect. Similarly if $m_2$ has an error, the parity bits $x_2$ and $x_3$ would be incorrect. If $m_3$ has an error $x_1$ and $x_3$ would be incorrect. We can determine this by looking at which equation involves which part of the encoded message. Similarly, if all three bits were incorrect we would know that $m_4$ must have had an error. Finally, if only one of the parity bits was incorrect we would know that the parity bit itself would have been erroneous. This gives us a way to detect and error in any of the seven bits of the message.
+With the parity bits we can determine where an error occurred in our 7-bit message. It is important to note that we must assume at no more than one error occurred. Any more than one error will be impossible to correct and will appear as if a different bit was erroneous.
+
+Let's break down how we can use our parity bits to correct errors. There are eight possibilities for any received message. These will include all three bits being correct, one of them being wrong, two of them being wrong or three of them being wrong. For a message with no error, all three parity bits will be correct. If $m_1$ had an error we would see that both $x_1$ and $x_2$ would be incorrect. Similarly if $m_2$ has an error, the parity bits $x_2$ and $x_3$ would be incorrect. If $m_3$ has an error $x_1$ and $x_3$ would be incorrect. We can determine this by looking at which equation involves which part of the encoded message. Similarly, if all three bits were incorrect we would know that $m_4$ must have had an error. Finally, if only one of the parity bits was incorrect we would know that the parity bit itself would have been erroneous. This gives us a way to detect and error in any of the seven bits of the message. <!-- it might make more sense to use a table. You dont have to. -->
 
 This checking process would then be able to check and correct an error in any of the 7 bits of the encoded message. An implementation of this in python would be as follows.
 ```python
 def encode(m):
-	return m + [(m[0] ^ m[1] ^ m[3]), (m[0] ^ m[2] ^ m[3]), (m[1] ^ m[2] ^ m[0])]
+	# <!-- be more readable -->
+	x1 = (m[0] ^ m[1] ^ m[3])
+	x2 = (m[0] ^ m[2] ^ m[3])
+	x3 = (m[1] ^ m[2] ^ m[0])
+	# note: we encode the message into 7 bits
+	return m + [x1,x2,x3]
 	
 	
-def decode(m):  
+def decode(m):
+	# calculate what the paraity bits should be
 	x1 = (m[0] ^ m[1] ^ m[3])  
 	x2 = (m[0] ^ m[2] ^ m[3])  
 	x3 = (m[1] ^ m[2] ^ m[3])
@@ -32,6 +46,7 @@ def decode(m):
 	if x1 != m[4]:  
 		if x2 != m[5]:  
 			if x3 != m[6]:  
+				# was case 1 (idk, im making up what the cases are)
 				m[3] ^= 1  
 			else:  
 				m[0] ^= 1  
@@ -51,13 +66,13 @@ def decode(m):
 ```
 
 ## Linear Error-Correcting Codes
-The Hamming code is excellent at correcting exactly one error, but in real life, this is rarely the case. In this section, I want to focus on a more complete definition of error-correcting codes. We want to narrow down our focus on linear codes as linear codes will provide us with a simple method to encode our messages. A linear code is a code that for any two codewords, the linear combination is its self a code word. For example, $1001001$ and $1011010$ are both codewords of the Hamming code presented above. The linear combination can be found by taking the XOR operator of each element. The linear combination would then be $0010011$ which is also a valid code-word. This property allows us to define the encoding process of any linear code with a matrix, called the generator matrix. To encode a message, we simply [multiply](https://en.wikipedia.org/wiki/Matrix_multiplication) the input message on the right by the generator matrix. Note that instead of using addition we will use the XOR operator. For the Hamming code presented above, we could create the following generator matrix.
+The Hamming code is excellent at correcting exactly one error, but in real life, this is rarely the case. In this section, I want to focus on a more complete definition of error-correcting codes. We want to narrow down our focus on linear codes as linear codes will provide us with a simple method to encode our messages. A linear code is a code that for any two codewords, the linear combination is its self a code word. For example, `1001001` and `1011010` are both codewords of the Hamming code presented above. The linear combination can be found by taking the XOR operator of each element. The linear combination would then be `0010011` which is also a valid code-word. This property allows us to define the encoding process of any linear code with a matrix, called the generator matrix. To encode a message, we simply [multiply](https://en.wikipedia.org/wiki/Matrix_multiplication) the input message on the right by the generator matrix. Note that instead of using addition we will use the XOR operator. For the Hamming code presented above, we could create the following generator matrix.
 $$
 \begin{pmatrix}  
-1&0&0&0&1&1&0\newline  
-0&1&0&0&1&0&1\newline  
-0&0&1&0&0&1&1\newline  
-0&0&0&1&1&1&1  
+1&0&0&0&1&1&0\\ 
+0&1&0&0&1&0&1\\  
+0&0&1&0&0&1&1\\  
+0&0&0&1&1&1&1\\
 \end{pmatrix}
 $$
 And the encoding procedure can be expressed with the generator matrix.
@@ -68,17 +83,20 @@ m_1&m_2&m_3&m_4&x_1&x_2&x_3
 \begin{pmatrix}  
 m_1&m_2&m_3&m_4
 \end{pmatrix}\begin{pmatrix}  
-1&0&0&0&1&1&0\newline  
-0&1&0&0&1&0&1\newline  
-0&0&1&0&0&1&1\newline  
+1&0&0&0&1&1&0\\
+0&1&0&0&1&0&1\\
+0&0&1&0&0&1&1\\
 0&0&0&1&1&1&1  
 \end{pmatrix}
 $$
+<!-- why the left mults -->
+
+<!-- you should introduce the syndrome when you first talk about the parity bits-->
 We also need a way to detect errors with this new definition. This will be done with the second matrix called the parity check matrix. With the parity check matrix, we will calculate what is called the syndrome. The syndrome, much like the definition of the word might suggest will correspond to the specific error that occurred, meaning the syndrome of a received message will directly correspond to the error and not the message. If no error occurs, then the syndrome will be zero. Otherwise, if an error occurred in the message, the syndrome would be some non-zero value that can help us to determine the error. The parity check matrix for the hamming code will be as follows:
 $$
 \begin{pmatrix}  
-1&1&0&1&1&0&0\newline  
-1&0&1&1&0&1&0\newline
+1&1&0&1&1&0&0\\
+1&0&1&1&0&1&0\\
 0&1&1&1&0&0&1
 \end{pmatrix}
 $$
@@ -90,8 +108,8 @@ S_1&S_2&S_3
 \begin{pmatrix}  
 m_1&m_2&m_3&m_4&x_1&x_2&x_3
 \end{pmatrix}\begin{pmatrix}  
-1&1&0&1&1&0&0\newline  
-1&0&1&1&0&1&0\newline  
+1&1&0&1&1&0&0\\
+1&0&1&1&0&1&0\\
 0&1&1&1&0&0&1
 \end{pmatrix}^T
 $$
@@ -102,8 +120,7 @@ To recap any linear code can be defined with a generator matrix and a parity che
 To see a random error generator with the implementation provided in the previous section, look [here](https://repl.it/@jorqueraian/Hamming). 
 
 ## Formal definitions
-
-
+<!-- I think that this is not needed -->
 This final section with go more in depth into the formal definitions of linear error-correcting codes and the mathematicas behind how they work. This section is by no means nessisary in understanding the previous sections. 
 
 A [field](https://en.wikipedia.org/wiki/Field_(mathematics)) is set of elements closed under multiplication, division, addition, and subtraction. Meaning for any two elements of a field, the use of any of these operations wil result with another element in the field. An example of a field is the set of real numbers. With error correction we care about finite field which is a type field with a finite number of elements. In this article we talked about the use of a field of two elements, $\{0,1\}$. With more complicated codes such as the Reed-Solomon code, a finite field to of $2^8$ elements is comonly used. This allows each element of the Reed-Solomon code to be represented as a byte. To see how we might implement one of these fields, with some linear algebra examples in python look [here](https://repl.it/@jorqueraian/FiniteFields).
